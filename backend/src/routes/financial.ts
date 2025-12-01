@@ -66,4 +66,20 @@ export async function financialRoutes(app: FastifyInstance) {
       balance: income - expense //Lucro
     };
   });
+  app.withTypeProvider<ZodTypeProvider>().get('/financial-records', async (request, reply) => {
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const records = await prisma.financialRecord.findMany({
+      where: { organizationId },
+      orderBy: { date: 'desc' }, // Mais recentes primeiro
+      take: 10, // Pega só as 10 últimas
+      include: {
+        project: { select: { name: true } }, // Traz o nome do projeto
+        client: { select: { name: true } }   // Traz o nome do cliente
+      }
+    });
+
+    return records;
+  });
 }
