@@ -1,0 +1,76 @@
+### Criar Conta
+POST http://localhost:3333/register
+Content-Type: application/json
+
+{
+  "name": "Davi Developer",
+  "email": "davi@teste.com",
+  "password": "password123",
+  "companyName": "Davi Software House"
+}
+
+### Criar Projeto (Protegido)
+POST http://localhost:3333/projects
+Authorization: Bearer COLE_SEU_TOKEN_GIGANTE_AQUI
+Content-Type: application/json
+
+{
+  "name": "Novo Site E-commerce",
+  "totalBudget": 15000.00,
+  "clientId": "COLE_O_ID_DO_CLIENTE_AQUI"
+}
+
+### Tentar criar de novo com mesmo email (tem que falhar)
+POST http://localhost:3333/register
+Content-Type: application/json
+
+{
+  "name": "Hacker",
+  "email": "davi@teste.com",
+  "password": "123",
+  "companyName": "Outra Empresa"
+}
+
+
+
+
+### Login
+### Fazer Login (Pegar o Token)
+POST http://localhost:3333/sessions
+Content-Type: application/json
+
+{
+  "email": "davi@teste.com",
+  "password": "password123"
+}
+
+
+### Lançar uma Receita (Venda)
+POST http://localhost:3333/financial-records
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "type": "INCOME",
+  "amount": 5000.00,
+  "description": "Venda de Consultoria",
+  "date": "2025-12-01T10:00:00Z"
+}
+
+### Lançar uma Despesa (Servidor AWS)
+POST http://localhost:3333/financial-records
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "type": "EXPENSE",
+  "amount": 150.00,
+  "description": "Servidor AWS",
+  "date": "2025-12-01T10:00:00Z"
+}
+
+### VER O DASHBOARD (A Mágica)
+GET http://localhost:3333/financial-records/dashboard
+Authorization: Bearer SEU_TOKEN_AQUI
+
+#### via curl
