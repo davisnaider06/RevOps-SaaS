@@ -30,5 +30,5 @@ app.get('/', async () => {
 
 // Subir o servidor
 app.listen({ port: 3333 }).then(() => {
-  console.log('Servidor HTTP rodando em http://localhost:3333')
+  console.log('Servidor HTTP rodando em process.env.NEXT_PUBLIC_API_URL')
 })

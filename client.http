@@ -1,5 +1,5 @@
 ### Criar Conta
-POST http://localhost:3333/register
+POST process.env.NEXT_PUBLIC_API_URL/register
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### Criar Projeto (Protegido)
-POST http://localhost:3333/projects
+POST process.env.NEXT_PUBLIC_API_URL/projects
 Authorization: Bearer COLE_SEU_TOKEN_GIGANTE_AQUI
 Content-Type: application/json
 
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 ### Tentar criar de novo com mesmo email (tem que falhar)
-POST http://localhost:3333/register
+POST process.env.NEXT_PUBLIC_API_URL/register
 Content-Type: application/json
 
 {
@@ -36,7 +36,7 @@ Content-Type: application/json
 
 ### Login
 ### Fazer Login (Pegar o Token)
-POST http://localhost:3333/sessions
+POST process.env.NEXT_PUBLIC_API_URL/sessions
 Content-Type: application/json
 
 {
@@ -46,7 +46,7 @@ Content-Type: application/json
 
 
 ### Lançar uma Receita (Venda)
-POST http://localhost:3333/financial-records
+POST process.env.NEXT_PUBLIC_API_URL/financial-records
 Authorization: Bearer SEU_TOKEN_AQUI
 Content-Type: application/json
 
@@ -58,7 +58,7 @@ Content-Type: application/json
 }
 
 ### Lançar uma Despesa (Servidor AWS)
-POST http://localhost:3333/financial-records
+POST process.env.NEXT_PUBLIC_API_URL/financial-records
 Authorization: Bearer SEU_TOKEN_AQUI
 Content-Type: application/json
 
@@ -70,7 +70,7 @@ Content-Type: application/json
 }
 
 ### VER O DASHBOARD (A Mágica)
-GET http://localhost:3333/financial-records/dashboard
+GET process.env.NEXT_PUBLIC_API_URL/financial-records/dashboard
 Authorization: Bearer SEU_TOKEN_AQUI
 
 #### via curl
