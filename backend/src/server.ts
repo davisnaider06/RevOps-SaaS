@@ -29,6 +29,9 @@ app.get('/', async () => {
 })
 
 // Subir o servidor
-app.listen({ port: 3333 }).then(() => {
-  console.log('Servidor HTTP rodando em process.env.NEXT_PUBLIC_API_URL')
+app.listen({ 
+  host: '0.0.0.0', 
+  port: process.env.PORT ? Number(process.env.PORT) : 3333 
+}).then((address) => {
+  console.log(`🔥 Servidor HTTP rodando em ${address}`)
 })
