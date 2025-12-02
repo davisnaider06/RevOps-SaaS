@@ -22,8 +22,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Importante: O fetch aponta para a porta 3333 (Backend)
-      const response = await fetch('process.env.NEXT_PUBLIC_API_URL/sessions', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+      const response = await fetch(`${apiUrl}/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
