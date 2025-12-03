@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Verificar se tem token
+    // Verificar se tem token
     const token = localStorage.getItem('revops-token')
     
     if (!token) {
@@ -30,8 +30,9 @@ export default function Dashboard() {
       return
     }
 
-    // 2. Buscar dados do Backend
-    fetch('process.env.NEXT_PUBLIC_API_URL/financial-records/dashboard', {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+    
+    fetch(`${apiUrl}/financial-records/dashboard`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -46,10 +47,11 @@ export default function Dashboard() {
       setData(data)
       setLoading(false)
     })
-    .catch(() => {
-      // Se der erro (token inválido), limpa e manda pro login
-      localStorage.removeItem('revops-token')
-      router.push('/login')
+    .catch((err) => {
+      console.error("Erro no dashboard:", err)
+      // localStorage.removeItem('revops-token') 
+      // router.push('/login') 
+      setLoading(false) // Para de carregar mesmo com erro
     })
   }, [router])
 
