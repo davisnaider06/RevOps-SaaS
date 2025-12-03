@@ -10,6 +10,9 @@ import { CreateTransactionDialog } from "@/components/create-transaction-dialog"
 import { TransactionsTable } from "@/components/transactions-table"
 import { OverviewChart } from "@/components/overview-chart"
 import { DonutChart } from "@/components/donut-chart"
+import { DateRangePicker } from "@/components/date-range-picker"
+import { DateRange } from "react-day-picker"
+import { addDays, startOfMonth, endOfMonth } from "date-fns"
 
 
 interface DashboardData {
@@ -22,32 +25,31 @@ export default function Dashboard() {
   const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  })
 
   useEffect(() => {
-    // Verificar se tem token
     const token = localStorage.getItem('revops-token')
-    
-    if (!token) {
-      router.push('/login') // Se não tiver logado, manda pro login
-      return
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+
+    // Monta a Query String com as datas
+    let query = ""
+    if (dateRange?.from && dateRange?.to) {
+        query = `?startDate=${dateRange.from.toISOString()}&endDate=${dateRange.to.toISOString()}`
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
-    
-    fetch(`${apiUrl}/financial-records/dashboard`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+    setLoading(true)
+
+    // Fetch Cards
+    fetch(`${apiUrl}/financial-records/dashboard${query}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(async (res) => {
-      if (res.status === 401) {
-        throw new Error('Token expirado')
-      }
-      return res.json()
-    })
-    .then((data) => {
-      setData(data)
-      setLoading(false)
+    .then(res => res.json())
+    .then(data => {
+        setData(data)
+        setLoading(false)
     })
     .catch((err) => {
       console.error("Erro no dashboard:", err)
@@ -55,7 +57,7 @@ export default function Dashboard() {
       // router.push('/login') 
       setLoading(false) 
     })
-  }, [router])
+  }, [router, dateRange])
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-slate-500">Carregando painel...</div>
@@ -66,6 +68,9 @@ export default function Dashboard() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Visão Geral</h1>
         <p className="text-sm md:text-base text-slate-500">Acompanhe a saúde financeira da sua empresa.</p>
+       <div className="mt-2">
+             <DateRangePicker date={dateRange} setDate={setDateRange} />
+          </div>
       </div>
 
       {/* Botões viram um grid no mobile para ficarem fáceis de clicar */}
@@ -131,7 +136,7 @@ export default function Dashboard() {
             <DonutChart />
           </div>
           <div className="grid gap-4 md:grid-cols-1">
-          <OverviewChart />
+          <OverviewChart dateRange={dateRange} />
         </div>
         </div>
         

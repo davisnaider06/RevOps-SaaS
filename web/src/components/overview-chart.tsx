@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateRange } from "react-day-picker" // <--- 1. Importar tipagem
 
 interface ChartData {
   month: string
@@ -10,7 +11,13 @@ interface ChartData {
   expense: number
 }
 
-export function OverviewChart() {
+// 2. Definir a Interface das Props
+interface Props {
+  dateRange: DateRange | undefined
+}
+
+// 3. Receber a prop no componente
+export function OverviewChart({ dateRange }: Props) {
   const [data, setData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +25,16 @@ export function OverviewChart() {
     const token = localStorage.getItem('revops-token')
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
 
-    fetch(`${apiUrl}/financial-records/chart`, {
+    // 4. Montar a Query String baseada na data recebida
+    let query = ""
+    if (dateRange?.from && dateRange?.to) {
+        query = `?startDate=${dateRange.from.toISOString()}&endDate=${dateRange.to.toISOString()}`
+    }
+
+    setLoading(true)
+
+    // 5. Usar a query na URL (com crase `)
+    fetch(`${apiUrl}/financial-records/chart${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -26,7 +42,8 @@ export function OverviewChart() {
       if (Array.isArray(data)) setData(data)
     })
     .finally(() => setLoading(false))
-  }, [])
+    
+  }, [dateRange]) // <--- 6. Importante: Adicionar dateRange nas dependências para recarregar quando mudar
 
   if (loading) return <div className="h-[350px] flex items-center justify-center text-slate-400">Carregando gráfico...</div>
 
@@ -37,7 +54,7 @@ export function OverviewChart() {
           <CardTitle>Visão Geral</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px] flex items-center justify-center text-slate-400">
-          Sem dados suficientes para gerar gráfico.
+          Sem dados suficientes neste período.
         </CardContent>
       </Card>
     )
@@ -46,7 +63,7 @@ export function OverviewChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Receitas vs Despesas (6 Meses)</CardTitle>
+        <CardTitle>Receitas vs Despesas</CardTitle>
       </CardHeader>
       <CardContent className="pl-2">
         <ResponsiveContainer width="100%" height={350}>
@@ -58,7 +75,7 @@ export function OverviewChart() {
               fontSize={12} 
               tickLine={false} 
               axisLine={false} 
-              tickFormatter={(val) => val.charAt(0).toUpperCase() + val.slice(1)} // Capitaliza 
+              tickFormatter={(val) => val.charAt(0).toUpperCase() + val.slice(1)}
             />
             <YAxis 
               stroke="#888888" 
