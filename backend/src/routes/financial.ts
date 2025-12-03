@@ -109,4 +109,45 @@ export async function financialRoutes(app: FastifyInstance) {
 
     return reply.status(204).send(); // 204 = Sucesso sem conteúdo
   });
+
+  app.withTypeProvider<ZodTypeProvider>().put('/financial-records/:id', {
+    schema: {
+      params: z.object({
+        id: z.string().uuid(),
+      }),
+      body: z.object({
+        description: z.string(),
+        amount: z.number(),
+        type: z.enum(['INCOME', 'EXPENSE']),
+        date: z.string(),
+        projectId: z.string().uuid().optional().nullable(), // Pode vir nulo para remover projeto
+      })
+    }
+  }, async (request, reply) => {
+    const { id } = request.params;
+    const { description, amount, type, date, projectId } = request.body;
+    // @ts-ignore
+    const { organizationId } = request.user;
+    
+    const record = await prisma.financialRecord.findFirst({
+      where: { id, organizationId }
+    });
+
+    if (!record) {
+      return reply.status(404).send({ message: 'Registro não encontrado.' });
+    }
+
+    await prisma.financialRecord.update({
+      where: { id },
+      data: {
+        description,
+        amount,
+        type,
+        date: new Date(date),
+        projectId: projectId || null
+      }
+    });
+
+    return reply.status(204).send();
+  });
 }

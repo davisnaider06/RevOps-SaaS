@@ -12,6 +12,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
+import { EditTransactionDialog } from "./edit-transaction-dialog"
 
 interface Transaction {
   id: string
@@ -19,6 +20,7 @@ interface Transaction {
   amount: number
   type: 'INCOME' | 'EXPENSE'
   date: string
+  projectId?: string | null
   project?: { name: string }
 }
 
@@ -115,7 +117,11 @@ export function TransactionsTable() {
                     {t.type === 'EXPENSE' ? '- ' : '+ '}
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(t.amount))}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="flex justify-end">
+                    <EditTransactionDialog 
+                      transaction={t} 
+                      onSuccess={loadTransactions} // Recarrega a lista ao salvar
+                    />
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -124,6 +130,8 @@ export function TransactionsTable() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+
+
                   </TableCell>
                 </TableRow>
               ))}
