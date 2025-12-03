@@ -34,11 +34,13 @@ export function CreateTransactionDialog() {
 
   // Busca projetos ao abrir
   useEffect(() => {
-    if (open) {
-      const token = localStorage.getItem('revops-token')
-      fetch('process.env.NEXT_PUBLIC_API_URL/projects', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+  if (open) {
+    const token = localStorage.getItem('revops-token')
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+
+    fetch(`${apiUrl}/projects`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         setProjects(data)
@@ -53,7 +55,8 @@ export function CreateTransactionDialog() {
     const token = localStorage.getItem('revops-token')
 
     try {
-      await fetch('process.env.NEXT_PUBLIC_API_URL/financial-records', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+      await fetch(`${apiUrl}/financial-records`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

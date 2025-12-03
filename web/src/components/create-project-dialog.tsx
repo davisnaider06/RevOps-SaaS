@@ -34,9 +34,11 @@ export function CreateProjectDialog() {
   useEffect(() => {
     if (open) {
       const token = localStorage.getItem('revops-token')
-      fetch('process.env.NEXT_PUBLIC_API_URL/clients', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+
+    fetch(`${apiUrl}/projects`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         setClients(data)
@@ -52,7 +54,8 @@ export function CreateProjectDialog() {
     const token = localStorage.getItem('revops-token')
 
     try {
-      const response = await fetch('process.env.NEXT_PUBLIC_API_URL/projects', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+     const response = await fetch(`${apiUrl}/projects`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

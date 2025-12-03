@@ -27,7 +27,9 @@ export function CreateClientDialog() {
     const token = localStorage.getItem('revops-token')
 
     try {
-      const response = await fetch('process.env.NEXT_PUBLIC_API_URL/clients', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+
+      const response = await fetch(`${apiUrl}/clients`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

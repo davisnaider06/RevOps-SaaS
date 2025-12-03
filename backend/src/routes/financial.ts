@@ -82,4 +82,31 @@ export async function financialRoutes(app: FastifyInstance) {
 
     return records;
   });
+
+  app.withTypeProvider<ZodTypeProvider>().delete('/financial-records/:id', {
+    schema: {
+      params: z.object({
+        id: z.string().uuid(),
+      })
+    }
+  }, async (request, reply) => {
+    const { id } = request.params;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    // Verifica se o registro existe e pertence à empresa do usuário (Segurança!)
+    const record = await prisma.financialRecord.findFirst({
+      where: { id, organizationId }
+    });
+
+    if (!record) {
+      return reply.status(404).send({ message: 'Registro não encontrado.' });
+    }
+
+    await prisma.financialRecord.delete({
+      where: { id }
+    });
+
+    return reply.status(204).send(); // 204 = Sucesso sem conteúdo
+  });
 }
