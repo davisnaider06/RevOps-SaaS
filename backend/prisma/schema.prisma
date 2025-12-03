@@ -21,6 +21,8 @@ model Organization {
   deals            Deal[]
   projects         Project[]
   financialRecords FinancialRecord[]
+
+  leads            Lead[]
   
   @@map("organizations")
 }
@@ -236,4 +238,32 @@ enum PaymentStatus {
   PAID
   OVERDUE
   CANCELED
+}
+
+model Lead {
+  id          String     @id @default(uuid())
+  title       String     // Ex: "Site da Padaria"
+  contactName String     // Ex: "Sr. João"
+  email       String?
+  phone       String?
+  value       Decimal?   @db.Decimal(15, 2) // Valor estimado
+  status      LeadStatus @default(NEW)
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("leads")
+}
+
+// AS COLUNAS DO KANBAN
+enum LeadStatus {
+  NEW         // Novo Lead
+  CONTACT     // Contato Feito
+  PROPOSAL    // Proposta Enviada
+  WON         // Ganho (Vira Cliente)
+  LOST        // Perdido
 }

@@ -40,31 +40,42 @@ export async function financialRoutes(app: FastifyInstance) {
     return reply.status(201).send({ message: 'Record created!' });
   });
 
-  // O Dashboard (Resumo Financeiro)
-  app.withTypeProvider<ZodTypeProvider>().get('/financial-records/dashboard', async (request, reply) => {
+ app.withTypeProvider<ZodTypeProvider>().get('/financial-records/dashboard', {
+    schema: {
+      querystring: z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    }
+  }, async (request, reply) => {
     // @ts-ignore
     const { organizationId } = request.user;
+    const { startDate, endDate } = request.query;
 
-    // Soma todas as Receitas
+    // Filtro dinâmico
+    const dateFilter: any = { organizationId };
+    
+    if (startDate && endDate) {
+      dateFilter.date = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    }
+
     const totalIncome = await prisma.financialRecord.aggregate({
-      where: { organizationId, type: 'INCOME' },
+      where: { ...dateFilter, type: 'INCOME' },
       _sum: { amount: true }
     });
 
-    // Soma todas as Despesas
     const totalExpense = await prisma.financialRecord.aggregate({
-      where: { organizationId, type: 'EXPENSE' },
+      where: { ...dateFilter, type: 'EXPENSE' },
       _sum: { amount: true }
     });
 
     const income = Number(totalIncome._sum.amount) || 0;
     const expense = Number(totalExpense._sum.amount) || 0;
 
-    return {
-      income,
-      expense,
-      balance: income - expense //Lucro
-    };
+    return { income, expense, balance: income - expense };
   });
   app.withTypeProvider<ZodTypeProvider>().get('/financial-records', {
     schema: {
@@ -159,53 +170,77 @@ export async function financialRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.withTypeProvider<ZodTypeProvider>().get('/financial-records/chart', async (request, reply) => {
+  app.withTypeProvider<ZodTypeProvider>().get('/financial-records/chart', {
+    schema: {
+      querystring: z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    }
+  }, async (request, reply) => {
     // @ts-ignore
     const { organizationId } = request.user;
+    const { startDate, endDate } = request.query;
 
-    // Pega data de 6 meses atrás
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-    sixMonthsAgo.setDate(1); // Começo do mês
+    const dateFilter: any = { organizationId };
+
+    if (startDate && endDate) {
+      dateFilter.date = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    } else {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+        sixMonthsAgo.setDate(1);
+        dateFilter.date = { gte: sixMonthsAgo };
+    }
 
     const records = await prisma.financialRecord.findMany({
-      where: {
-        organizationId,
-        date: { gte: sixMonthsAgo } 
-      },
+      where: dateFilter,
       orderBy: { date: 'asc' }
     });
 
+    
     const grouped = records.reduce((acc, record) => {
-      const month = record.date.toLocaleDateString('pt-BR', { month: 'short' });
-      
+      const month = record.date.toLocaleDateString('pt-BR', { month: 'short' }); 
       if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
-      
-      if (record.type === 'INCOME') {
-        acc[month].income += Number(record.amount);
-      } else {
-        acc[month].expense += Number(record.amount);
-      }
-      
+      if (record.type === 'INCOME') acc[month].income += Number(record.amount);
+      else acc[month].expense += Number(record.amount);
       return acc;
     }, {} as Record<string, any>);
 
     return Object.values(grouped);
   });
-  app.withTypeProvider<ZodTypeProvider>().get('/financial-records/donut-chart', async (request, reply) => {
+  app.withTypeProvider<ZodTypeProvider>().get('/financial-records/donut-chart', {
+    schema: {
+      querystring: z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    }
+  }, async (request, reply) => {
     // @ts-ignore
     const { organizationId } = request.user;
+    const { startDate, endDate } = request.query;
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); 
+    const dateFilter: any = { organizationId };
 
-    // Agrupa por tipo (INCOME/EXPENSE) e soma os valores deste mês
+    if (startDate && endDate) {
+      dateFilter.date = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    } else {
+        // Padrão: Mês atual
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        dateFilter.date = { gte: startOfMonth };
+    }
+
     const totals = await prisma.financialRecord.groupBy({
       by: ['type'],
-      where: {
-        organizationId,
-        date: { gte: startOfMonth }
-      },
+      where: dateFilter,
       _sum: { amount: true }
     });
 
@@ -215,10 +250,7 @@ export async function financialRoutes(app: FastifyInstance) {
       color: t.type === 'INCOME' ? '#10b981' : '#ef4444' 
     }));
 
-    if (formattedData.length === 0) {
-        return [];
-    }
-
+    if (formattedData.length === 0) return [];
     return formattedData;
   });
 }

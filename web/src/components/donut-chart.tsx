@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
+import { DateRange } from "react-day-picker" 
 
 interface ChartData {
   name: string
@@ -12,7 +13,11 @@ interface ChartData {
   [key: string]: any
 }
 
-export function DonutChart() {
+interface Props {
+  dateRange: DateRange | undefined
+}
+
+export function DonutChart({ dateRange }: Props) {
   const [data, setData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -20,8 +25,16 @@ export function DonutChart() {
     const token = localStorage.getItem('revops-token')
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
 
-    // Use CRASE na URL
-    fetch(`${apiUrl}/financial-records/donut-chart`, {
+    // Monta a Query String com as datas
+    let query = ""
+    if (dateRange?.from && dateRange?.to) {
+        query = `?startDate=${dateRange.from.toISOString()}&endDate=${dateRange.to.toISOString()}`
+    }
+
+    setLoading(true)
+
+    // Usa a query na URL
+    fetch(`${apiUrl}/financial-records/donut-chart${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -29,7 +42,8 @@ export function DonutChart() {
       if (Array.isArray(data)) setData(data)
     })
     .finally(() => setLoading(false))
-  }, [])
+    
+  }, [dateRange])
 
   if (loading) {
     return (
@@ -45,16 +59,15 @@ export function DonutChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Balanço do Mês</CardTitle>
+          <CardTitle>Balanço do Período</CardTitle>
         </CardHeader>
-        <CardContent className="h-[350px] flex items-center justify-center text-slate-400 text-sm text-center px-4">
-          Sem movimentações neste mês para gerar o gráfico.
+        <CardContent className="h-[250px] flex items-center justify-center text-slate-400 text-sm text-center px-4">
+          Sem movimentações neste período.
         </CardContent>
       </Card>
     )
   }
 
-  // Formatador de moeda para o Tooltip
   const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -73,11 +86,10 @@ export function DonutChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Balanço do Mês</CardTitle>
+        <CardTitle>Balanço do Período</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[350px] w-full relative">
-           {/* Texto central da rosquinha */}
+        <div className="h-[300px] w-full relative">
            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-sm text-slate-500 font-medium">Movimentado</span>
                 <span className="text-2xl font-bold text-slate-900">
@@ -91,10 +103,9 @@ export function DonutChart() {
                 data={data}
                 cx="50%"
                 cy="50%"
-                // O segredo da rosquinha: innerRadius
                 innerRadius={80}
                 outerRadius={110}
-                paddingAngle={2} // Espacinho entre as fatias
+                paddingAngle={2}
                 dataKey="value"
                 stroke="none"
               >

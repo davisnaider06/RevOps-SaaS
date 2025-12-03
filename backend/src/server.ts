@@ -15,6 +15,8 @@ import { projectsRoutes } from './routes/projects'
 import { financialRoutes } from './routes/financial'
 import { clientsRoutes } from './routes/clients'
 import { passwordRoutes } from './routes/password'
+import { settingsRoutes } from './routes/settings'
+import { crmRoutes } from './routes/crm'
 
 // zod
 app.setValidatorCompiler(validatorCompiler);
@@ -25,6 +27,8 @@ app.register(projectsRoutes)
 app.register(financialRoutes)
 app.register(clientsRoutes)
 app.register(passwordRoutes)
+app.register(settingsRoutes)
+app.register(crmRoutes)
 
 // Health Check
 app.get('/', async () => {

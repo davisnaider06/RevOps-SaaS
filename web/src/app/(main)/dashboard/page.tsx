@@ -133,7 +133,7 @@ export default function Dashboard() {
         </div>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-10 ">
           <div className="md:col-span-1">
-            <DonutChart />
+            <DonutChart dateRange={dateRange} />
           </div>
           <div className="grid gap-4 md:grid-cols-1">
           <OverviewChart dateRange={dateRange} />
