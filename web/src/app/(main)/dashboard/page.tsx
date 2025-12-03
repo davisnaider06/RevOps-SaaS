@@ -8,6 +8,8 @@ import { CreateProjectDialog } from "@/components/create-project-dialog"
 import { CreateClientDialog } from "@/components/create-client-dialog"
 import { CreateTransactionDialog } from "@/components/create-transaction-dialog"
 import { TransactionsTable } from "@/components/transactions-table"
+import { OverviewChart } from "@/components/overview-chart"
+import { DonutChart } from "@/components/donut-chart"
 
 
 interface DashboardData {
@@ -124,6 +126,15 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-10 ">
+          <div className="md:col-span-1">
+            <DonutChart />
+          </div>
+          <div className="grid gap-4 md:grid-cols-1">
+          <OverviewChart />
+        </div>
+        </div>
+        
         <TransactionsTable />
       </div></>
   )

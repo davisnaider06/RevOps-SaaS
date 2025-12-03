@@ -17,10 +17,28 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [companyName, setCompanyName] = useState('')
+  const [error, setError] = useState('')
+
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
 
   async function handleRegister(e: FormEvent) {
     e.preventDefault()
+    
+    // --- NOVA VALIDAÇÃO ---
+    if (!isValidEmail(email)) {
+      setError("Por favor, digite um e-mail válido.")
+      return
+    }
+    if (password.length < 6) {
+      setError("A senha deve ter no mínimo 6 caracteres.")
+      return
+    }
+    // ---------------------
+
     setLoading(true)
+    setError('')
 
     try {
       // Usa a variável de ambiente se existir, senão usa localhost

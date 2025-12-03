@@ -33,18 +33,25 @@ export function CreateProjectDialog() {
   // Busca os clientes assim que abre o modal
   useEffect(() => {
     if (open) {
+      setLoading(true) // Mostra que está carregando
       const token = localStorage.getItem('revops-token')
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
-
-    fetch(`${apiUrl}/projects`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
+      
+      fetch(`${apiUrl}/clients`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       .then(res => res.json())
       .then(data => {
-        setClients(data)
-        // Seleciona o primeiro automaticamente se houver
-        if (data.length > 0) setSelectedClientId(data[0].id)
+        if (Array.isArray(data)) {
+            setClients(data)
+            // Se tiver clientes e nenhum selecionado, seleciona o primeiro
+            if (data.length > 0 && !selectedClientId) {
+                setSelectedClientId(data[0].id)
+            }
+        }
       })
+      .catch(err => console.error("Erro ao buscar clientes:", err))
+      .finally(() => setLoading(false))
     }
   }, [open])
 
@@ -73,6 +80,7 @@ export function CreateProjectDialog() {
       setOpen(false)
       setName("")
       setBudget("")
+      setSelectedClientId("")
       alert("Projeto criado com sucesso!")
       window.location.reload()
 

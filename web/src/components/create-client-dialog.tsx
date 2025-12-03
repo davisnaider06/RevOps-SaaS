@@ -38,7 +38,10 @@ export function CreateClientDialog() {
         body: JSON.stringify({ name, email }),
       })
 
-      if (!response.ok) throw new Error('Erro ao criar cliente')
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || 'Erro ao criar cliente')
+      }
 
       setOpen(false)
       setName("")

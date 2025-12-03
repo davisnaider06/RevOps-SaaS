@@ -14,6 +14,7 @@ app.register(cors, {
 import { projectsRoutes } from './routes/projects'
 import { financialRoutes } from './routes/financial'
 import { clientsRoutes } from './routes/clients'
+import { passwordRoutes } from './routes/password'
 
 // zod
 app.setValidatorCompiler(validatorCompiler);
@@ -23,6 +24,7 @@ app.register(authRoutes)
 app.register(projectsRoutes)
 app.register(financialRoutes)
 app.register(clientsRoutes)
+app.register(passwordRoutes)
 
 // Health Check
 app.get('/', async () => {

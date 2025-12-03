@@ -97,7 +97,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* --- Sidebar Mobile (Sheet) --- */}
       <div className="md:hidden flex items-center p-4 border-b bg-white">
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>

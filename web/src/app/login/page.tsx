@@ -15,9 +15,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Aqui usamos o tipo FormEvent para o TypeScript não reclamar do 'e'
-  async function handleLogin(e: FormEvent) { 
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  async function handleLogin(e: FormEvent) {
     e.preventDefault()
+    
+    if (!isValidEmail(email)) {
+      setError("Por favor, digite um e-mail válido.")
+      return
+    }
+    if (password.length < 6) {
+      setError("A senha deve ter no mínimo 6 caracteres.")
+      return
+    }
+ 
     setLoading(true)
     setError('')
 
@@ -37,7 +50,6 @@ export default function LoginPage() {
 
       localStorage.setItem('revops-token', data.token)
       
-      alert('Login realizado com sucesso! Vamos para o dashboard.')
       router.push('/') // Redireciona para a Home
 
     } catch (err: any) {
@@ -94,6 +106,9 @@ export default function LoginPage() {
         <CardFooter className="justify-center">
           <p className="text-sm text-slate-500">
             Ainda não tem conta? <a href="register" className="text-blue-600 hover:underline">Cadastre-se</a>
+          </p>
+          <p className="text-sm text-slate-500">
+            Esqueceu a senha? <a href="forgot-password" className="text-blue-600 hover:underline">Recuperar senha</a>
           </p>
         </CardFooter>
       </Card>
