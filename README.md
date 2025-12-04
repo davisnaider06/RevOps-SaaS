@@ -176,17 +176,9 @@ O projeto está configurado para deploy contínuo (CI/CD):
 5.  Abra um Pull Request
 
 -----
+## 🌐 Link do Projeto (Live Demo)
 
-**Desenvolvido com 💜 por [Seu Nome]**
+Acesse a aplicação rodando em produção aqui:
+👉 **[https://revops-saas.vercel.app](https://revops-saas.vercel.app)**
 
-```
-
-### 💡 Dica Extra:
-Depois de salvar o arquivo, tire alguns **Prints da tela** (do Dashboard, do Kanban e do Portal do Cliente) e coloque na pasta do projeto (ex: crie uma pasta `docs/screenshots`).
-
-Depois, você pode adicionar esses prints no README usando:
-`![Dashboard](./docs/screenshots/dashboard.png)`
-
-Isso valoriza muito o portfólio!
-```
-
+> **Nota:** O sistema pode demorar alguns segundos no primeiro acesso (Cold Start do Render).
