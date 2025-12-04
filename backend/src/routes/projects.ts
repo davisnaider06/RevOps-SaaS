@@ -3,6 +3,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { verifyJwt } from "../middlewares/verify-jwt";
+import { randomUUID } from "node:crypto";
 
 export async function projectsRoutes(app: FastifyInstance) {
   
@@ -115,5 +116,33 @@ export async function projectsRoutes(app: FastifyInstance) {
       },
       transactions
     };
+  });
+  app.withTypeProvider<ZodTypeProvider>().patch('/projects/:id/share', {
+    onRequest: [verifyJwt],
+    schema: {
+      params: z.object({ id: z.string().uuid() }),
+    }
+  }, async (request, reply) => {
+    const { id } = request.params;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const project = await prisma.project.findFirst({
+      where: { id, organizationId }
+    });
+
+    if (!project) return reply.status(404).send({ message: 'Projeto não encontrado.' });
+
+    // Gera token
+    const shareToken = randomUUID();
+
+    // Atualiza no banco
+    await prisma.project.update({
+      where: { id },
+      data: { shareToken }
+    });
+
+    // Retorna explicitamente o token
+    return reply.status(200).send({ shareToken });
   });
 }
