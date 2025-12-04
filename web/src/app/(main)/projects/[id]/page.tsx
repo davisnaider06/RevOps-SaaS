@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { CreateTransactionDialog } from "@/components/create-transaction-dialog"
 
 // Tipos dos dados
 interface ProjectDetails {
@@ -63,7 +64,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
             <Link href="/projects"><ArrowLeft className="h-4 w-4" /></Link>
@@ -72,6 +73,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900">{project.name}</h1>
                 <Badge variant={project.status === 'ACTIVE' ? 'default' : 'secondary'}>{project.status}</Badge>
+                <CreateTransactionDialog defaultProjectId={project.id} />
             </div>
             <p className="text-slate-500 text-sm flex items-center gap-2 mt-1">
                 <span className="font-medium text-slate-700">{project.client.name}</span> • 

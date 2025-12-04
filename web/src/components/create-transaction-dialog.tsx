@@ -19,7 +19,7 @@ interface Project {
   name: string
 }
 
-export function CreateTransactionDialog() {
+export function CreateTransactionDialog({defaultProjectId}: { defaultProjectId?: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   
@@ -28,7 +28,7 @@ export function CreateTransactionDialog() {
   const [amount, setAmount] = useState("")
   const [type, setType] = useState<"INCOME" | "EXPENSE">("INCOME")
   const [date, setDate] = useState("")
-  const [selectedProjectId, setSelectedProjectId] = useState("")
+  const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId || "")
   
   const [projects, setProjects] = useState<Project[]>([])
 
@@ -44,10 +44,11 @@ export function CreateTransactionDialog() {
       .then(res => res.json())
       .then(data => {
         setProjects(data)
-        if (data.length > 0) setSelectedProjectId(data[0].id)
+        if (data.length > 0 && !defaultProjectId) setSelectedProjectId(data[0].id)
+        if (defaultProjectId) setSelectedProjectId(defaultProjectId)
       })
     }
-  }, [open])
+  }, [open, defaultProjectId])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
