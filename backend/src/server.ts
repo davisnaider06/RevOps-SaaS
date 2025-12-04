@@ -8,7 +8,7 @@ const app = fastify()
 
 app.register(cors, {
   origin: '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 })
 
 import { projectsRoutes } from './routes/projects'
