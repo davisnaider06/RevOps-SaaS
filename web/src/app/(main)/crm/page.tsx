@@ -21,6 +21,8 @@ interface Lead {
   value: number
   status: 'NEW' | 'CONTACT' | 'PROPOSAL' | 'WON' | 'LOST'
   createdAt: string
+  email?: string | null
+  phone?: string | null
 }
 
 // Configuração das Colunas
