@@ -1,10 +1,3 @@
-Com certeza\! Um **README** bem feito é o cartão de visitas do seu projeto. Ele serve tanto para você (no futuro) quanto para outros desenvolvedores ou investidores entenderem a complexidade do que foi construído.
-
-Aqui está um modelo profissional e completo, detalhando a arquitetura, as funcionalidades e como rodar o projeto.
-
-Copie o código abaixo e cole no arquivo **`README.md`** na raiz do seu projeto.
-
-````markdown
 # 🚀 RevOps SaaS - Sistema Operacional de Receita
 
 > **Gestão Inteligente para Prestadores de Serviços.** > CRM, Gestão de Projetos e Controle Financeiro em uma única plataforma.
@@ -196,3 +189,4 @@ Depois, você pode adicionar esses prints no README usando:
 
 Isso valoriza muito o portfólio!
 ```
+
