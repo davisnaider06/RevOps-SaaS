@@ -11,7 +11,8 @@ import {
   Wallet, 
   Settings, 
   LogOut, 
-  Menu 
+  Menu, 
+  Kanban
 } from "lucide-react"
 import {
   Sheet,
@@ -26,6 +27,12 @@ const routes = [
     icon: LayoutDashboard,
     href: "/dashboard",
     color: "text-sky-500",
+  },
+  {
+    label: "CRM / Pipeline", // <--- NOVO ITEM
+    icon: Kanban,
+    href: "/crm",
+    color: "text-orange-500",
   },
   {
     label: "Projetos",
