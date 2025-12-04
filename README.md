@@ -179,6 +179,7 @@ O projeto está configurado para deploy contínuo (CI/CD):
 ## 🌐 Link do Projeto (Live Demo)
 
 Acesse a aplicação rodando em produção aqui:
-👉 **[https://revops-saas.vercel.app](https://revops-saas.vercel.app)**
+👉 **[https://revops-saas.vercel.app](https://rev-ops-saa-s.vercel.app/)**
 
 > **Nota:** O sistema pode demorar alguns segundos no primeiro acesso (Cold Start do Render).
+
