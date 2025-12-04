@@ -18,6 +18,8 @@ import { passwordRoutes } from './routes/password'
 import { settingsRoutes } from './routes/settings'
 import { crmRoutes } from './routes/crm'
 import { portalRoutes } from './routes/portal'
+import { productsRoutes } from './routes/products'
+
 // zod
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -30,6 +32,8 @@ app.register(passwordRoutes)
 app.register(settingsRoutes)
 app.register(crmRoutes)
 app.register(portalRoutes)
+app.register(productsRoutes)
+
 // Health Check
 app.get('/', async () => {
   return { message: 'API RevOps está rodando!' }

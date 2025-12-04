@@ -23,6 +23,8 @@ model Organization {
   financialRecords FinancialRecord[]
 
   leads            Lead[]
+
+  products         Product[]
   
   @@map("organizations")
 }
@@ -268,4 +270,34 @@ enum LeadStatus {
   PROPOSAL    // Proposta Enviada
   WON         // Ganho (Vira Cliente)
   LOST        // Perdido
+}
+
+
+enum ProductType {
+  GOOD     // Produto Físico (Shampoo, Camiseta) - Controla Estoque
+  SERVICE  // Serviço (Corte, Consultoria) - Não tem estoque
+}
+
+// CATÁLOGO DE ITENS
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal     @db.Decimal(10, 2) // Preço de Venda
+  costPrice   Decimal?    @db.Decimal(10, 2) // Preço de Custo (Opcional, pra saber margem)
+  
+  type        ProductType @default(GOOD)
+  
+  // Controle de Estoque
+  stockQuantity Int       @default(0) // Quantidade atual
+  minStock      Int?      @default(0) // Estoque mínimo (pra avisar quando tá acabando)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("products")
 }

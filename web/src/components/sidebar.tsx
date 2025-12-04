@@ -12,7 +12,9 @@ import {
   Settings, 
   LogOut, 
   Menu, 
-  Kanban
+  Kanban,
+  Package,
+  ShoppingCart
 } from "lucide-react"
 import {
   Sheet,
@@ -29,10 +31,22 @@ const routes = [
     color: "text-sky-500",
   },
   {
-    label: "CRM / Pipeline", // <--- NOVO ITEM
+    label: "CRM / Pipeline", 
     icon: Kanban,
     href: "/crm",
     color: "text-orange-500",
+  },
+  {
+    label: "PDV / Caixa",
+    icon: ShoppingCart,
+    href: "/pos",
+    color: "text-orange-600",
+  },
+  {
+    label: "Catálogo / Estoque", 
+    icon: Package,
+    href: "/products", 
+    color: "text-pink-500",
   },
   {
     label: "Projetos",
