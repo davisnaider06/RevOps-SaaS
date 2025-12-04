@@ -82,4 +82,76 @@ export async function productsRoutes(app: FastifyInstance) {
       
       return reply.status(204).send();
   });
+
+  app.withTypeProvider<ZodTypeProvider>().post('/products/checkout', {
+    schema: {
+      body: z.object({
+        items: z.array(z.object({
+          productId: z.string().uuid(),
+          quantity: z.number().min(1)
+        })),
+        clientId: z.string().uuid().optional(), // Cliente é opcional no balcão
+        paymentMethod: z.string().default("Dinheiro") // Ex: Pix, Cartão
+      })
+    }
+  }, async (request, reply) => {
+    const { items, clientId, paymentMethod } = request.body;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    // 1. Calcular o total e validar estoque
+    let totalAmount = 0;
+    const descriptionParts = [];
+
+    // Vamos iterar sobre os itens para preparar a venda
+    for (const item of items) {
+        const product = await prisma.product.findUnique({
+            where: { id: item.productId }
+        });
+
+        if (!product) continue;
+
+        // Verifica estoque se for produto físico
+        if (product.type === 'GOOD') {
+            if (product.stockQuantity < item.quantity) {
+                return reply.status(400).send({ 
+                    message: `Estoque insuficiente para ${product.name}. Restam ${product.stockQuantity}.` 
+                });
+            }
+        }
+
+        totalAmount += Number(product.price) * item.quantity;
+        descriptionParts.push(`${item.quantity}x ${product.name}`);
+    }
+
+    // 2. Transação Atômica (Tudo ou nada)
+    await prisma.$transaction(async (tx) => {
+        // A. Baixar Estoque
+        for (const item of items) {
+            const product = await tx.product.findUnique({ where: { id: item.productId }});
+            if (product?.type === 'GOOD') {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: { stockQuantity: { decrement: item.quantity } }
+                });
+            }
+        }
+
+        // B. Criar o registro financeiro (Receita)
+        await tx.financialRecord.create({
+            data: {
+                type: 'INCOME',
+                amount: totalAmount,
+                description: `Venda PDV: ${descriptionParts.join(', ')}`,
+                date: new Date(),
+                category: 'Vendas',
+                status: 'PAID', // Venda de balcão já está paga
+                clientId: clientId || null,
+                organizationId
+            }
+        });
+    });
+
+    return reply.status(201).send({ message: 'Venda realizada!' });
+  });
 }
