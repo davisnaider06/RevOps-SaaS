@@ -25,6 +25,8 @@ model Organization {
   leads            Lead[]
 
   products         Product[]
+
+  type          OrgType  @default(SERVICE)
   
   @@map("organizations")
 }
@@ -300,4 +302,10 @@ model Product {
 
   @@index([organizationId])
   @@map("products")
+}
+
+enum OrgType {
+  SERVICE  // Agências, Consultorias (Foco: Projetos + CRM)
+  RETAIL   // Comércio, Barbearias (Foco: PDV + Estoque)
+  HYBRID   // (Futuro: Faz os dois)
 }

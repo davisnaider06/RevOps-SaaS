@@ -5,7 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, ShoppingCart, Trash2, Loader2, Minus, Plus } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import { Search, ShoppingCart, Trash2, Loader2, Minus, Plus,  CreditCard, Banknote, QrCode } from "lucide-react"
 
 interface Product {
   id: string
@@ -24,6 +32,7 @@ export default function PosPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState("Dinheiro")
 
   // Carrega catálogo
   useEffect(() => {
@@ -80,7 +89,9 @@ export default function PosPage() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ items: itemsPayload })
+        body: JSON.stringify({ 
+          items: itemsPayload,
+          paymentMethod})
       })
 
       if (!res.ok) {
@@ -182,22 +193,40 @@ export default function PosPage() {
             )}
         </CardContent>
         
-        {/* Rodapé do Carrinho */}
-        <div className="p-4 bg-slate-50 border-t">
-            <div className="flex justify-between items-center mb-4">
-                <span className="text-slate-600">Total</span>
-                <span className="text-2xl font-bold text-slate-900">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
-                </span>
-            </div>
-            <Button 
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-lg py-6" 
-                disabled={cart.length === 0 || loading}
-                onClick={handleCheckout}
-            >
-                {loading ? <Loader2 className="animate-spin" /> : "Finalizar Venda"}
-            </Button>
+       {/* Rodapé do Carrinho */}
+    <div className="p-4 bg-slate-50 border-t space-y-4">
+
+        {/* Seletor de Pagamento */}
+        <div className="space-y-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Forma de Pagamento</span>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger className="bg-white">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Dinheiro">💵 Dinheiro</SelectItem>
+                    <SelectItem value="Pix">💠 Pix</SelectItem>
+                    <SelectItem value="Crédito">💳 Cartão de Crédito</SelectItem>
+                    <SelectItem value="Débito">💳 Cartão de Débito</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
+
+        <div className="flex justify-between items-center pt-2">
+            <span className="text-slate-600">Total</span>
+            <span className="text-2xl font-bold text-slate-900">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+            </span>
+        </div>
+
+        <Button 
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-lg py-6" 
+            disabled={cart.length === 0 || loading}
+            onClick={handleCheckout}
+        >
+            {loading ? <Loader2 className="animate-spin" /> : "Finalizar Venda"}
+        </Button>
+    </div>
       </Card>
 
     </div>

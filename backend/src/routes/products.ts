@@ -101,7 +101,7 @@ export async function productsRoutes(app: FastifyInstance) {
 
     // 1. Calcular o total e validar estoque
     let totalAmount = 0;
-    const descriptionParts = [];
+    const descriptionParts: string[] =[];
 
     // Vamos iterar sobre os itens para preparar a venda
     for (const item of items) {
@@ -142,7 +142,7 @@ export async function productsRoutes(app: FastifyInstance) {
             data: {
                 type: 'INCOME',
                 amount: totalAmount,
-                description: `Venda PDV: ${descriptionParts.join(', ')}`,
+                description: `Venda PDV [${paymentMethod}]: ${descriptionParts.join(', ')}`,
                 date: new Date(),
                 category: 'Vendas',
                 status: 'PAID', // Venda de balcão já está paga
