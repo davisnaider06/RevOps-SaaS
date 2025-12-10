@@ -15,6 +15,15 @@ import {
 
 import { Search, ShoppingCart, Trash2, Loader2, Minus, Plus,  CreditCard, Banknote, QrCode } from "lucide-react"
 
+import { ClipboardList } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 interface Product {
   id: string
   name: string
@@ -34,6 +43,22 @@ export default function PosPage() {
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState("Dinheiro")
 
+  const [dailySummary, setDailySummary] = useState<{product: string, quantity: number}[]>([])
+
+  async function loadDailySummary() {
+  const token = localStorage.getItem('revops-token')
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'
+
+  try {
+    const res = await fetch(`${apiUrl}/sales/summary`, {
+       headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const data = await res.json()
+    setDailySummary(data)
+  } catch (err) {
+    console.error(err)
+  }
+}
   // Carrega catálogo
   useEffect(() => {
     const token = localStorage.getItem('revops-token')
@@ -127,6 +152,57 @@ export default function PosPage() {
                     onChange={e => setSearch(e.target.value)}
                 />
             </div>
+            <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 text-slate-600 hover:text-emerald-600"
+                    onClick={loadDailySummary}
+                  >
+                     <ClipboardList className="h-4 w-4" /> 
+                     <span className="hidden sm:inline">Resumo do Dia</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sincronização de Estoque</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                      <p className="text-sm text-slate-500">
+                          Abaixo estão os itens vendidos hoje. Use esta lista para dar baixa no seu sistema antigo.
+                      </p>
+                      
+                      <div className="bg-slate-50 p-4 rounded-md border text-sm max-h-[300px] overflow-y-auto">
+                          {dailySummary.length === 0 ? (
+                              <p className="text-slate-400 text-center italic">Nenhuma venda registrada hoje.</p>
+                          ) : (
+                              <ul className="space-y-2">
+                                  {dailySummary.map((item, idx) => (
+                                      <li key={idx} className="flex justify-between border-b border-slate-200 pb-1 last:border-0">
+                                          <span className="font-medium text-slate-700">{item.product}</span>
+                                          <span className="font-bold text-emerald-600">{item.quantity} un.</span>
+                                      </li>
+                                  ))}
+                              </ul>
+                          )}
+                      </div>
+
+                      {dailySummary.length > 0 && (
+                        <Button 
+                            variant="outline" 
+                            className="w-full" 
+                            onClick={() => {
+                                const text = dailySummary.map(i => `${i.quantity}x ${i.product}`).join('\n')
+                                navigator.clipboard.writeText(text)
+                                alert("Lista copiada!")
+                            }}
+                        >
+                            Copiar Lista
+                        </Button>
+                      )}
+                  </div>
+                </DialogContent>
+            </Dialog>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto content-start">
@@ -228,7 +304,7 @@ export default function PosPage() {
         </Button>
     </div>
       </Card>
-
+           
     </div>
   )
 }

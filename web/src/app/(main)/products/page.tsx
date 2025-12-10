@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Package, Scissors, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ImportProductsDialog } from "@/components/import-products-dialog"
 
 interface Product {
   id: string
@@ -64,6 +65,7 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Catálogo & Estoque</h1>
           <p className="text-slate-500">Gerencie seus produtos e serviços.</p>
         </div>
+        <ImportProductsDialog onSuccess={loadProducts} />
         <CreateProductDialog onSuccess={loadProducts} />
       </div>
 

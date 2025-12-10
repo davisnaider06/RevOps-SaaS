@@ -154,4 +154,81 @@ export async function productsRoutes(app: FastifyInstance) {
 
     return reply.status(201).send({ message: 'Venda realizada!' });
   });
+
+  app.withTypeProvider<ZodTypeProvider>().post('/products/batch', {
+    schema: {
+      body: z.array(z.object({
+        name: z.string(),
+        price: z.number(),
+        stockQuantity: z.number().default(0),
+        type: z.enum(['GOOD', 'SERVICE']).default('GOOD')
+      }))
+    }
+  }, async (request, reply) => {
+    const products = request.body;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    await prisma.product.createMany({
+      data: products.map(p => ({
+        ...p,
+        organizationId
+      }))
+    });
+
+    return reply.status(201).send({ message: `${products.length} itens importados!` });
+  });
+
+  // Resumo de Vendas do Dia (Para Sincronização)
+  app.withTypeProvider<ZodTypeProvider>().get('/sales/summary', async (request, reply) => {
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    // Define o intervalo de tempo
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    //  Busca todas as receitas de Venda PDV de hoje
+    const sales = await prisma.financialRecord.findMany({
+      where: {
+        organizationId,
+        date: { gte: startOfDay, lte: endOfDay },
+        description: { contains: 'Venda PDV' } // Filtra só o que veio do caixa
+      }
+    });
+
+    // Processa o texto para somar os itens
+    const summary: Record<string, number> = {};
+
+    sales.forEach(sale => {
+      // Remove o prefixo "Venda PDV [Metodo]: " para sobrar só os itens
+      const itemsPart = sale.description.split(': ')[1]; 
+      if (!itemsPart) return;
+
+      const items = itemsPart.split(', ');
+
+      items.forEach(itemStr => {
+        // Regex para separar "2" de "Shampoo"
+        const match = itemStr.match(/^(\d+)x\s(.+)$/);
+        if (match) {
+          const qtd = parseInt(match[1]);
+          const name = match[2];
+
+          if (!summary[name]) summary[name] = 0;
+          summary[name] += qtd;
+        }
+      });
+    });
+
+    //Formata para devolver uma lista bonita
+    const result = Object.entries(summary).map(([product, quantity]) => ({
+      product,
+      quantity
+    })).sort((a, b) => b.quantity - a.quantity); // Mais vendidos primeiro
+
+    return result;
+  });
 }

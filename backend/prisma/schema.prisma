@@ -27,6 +27,8 @@ model Organization {
   products         Product[]
 
   type          OrgType  @default(SERVICE)
+
+  sales             Sale[]
   
   @@map("organizations")
 }
@@ -85,6 +87,9 @@ model Client {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  porcentagemDesconto Float @default(0)
+  sales               Sale[]
 
   @@index([organizationId])
   @@map("clients")
@@ -297,6 +302,9 @@ model Product {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
+  estoqueMinimo Int @default(5)
+  saleItems     SaleItem[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -308,4 +316,54 @@ enum OrgType {
   SERVICE  // Agências, Consultorias (Foco: Projetos + CRM)
   RETAIL   // Comércio, Barbearias (Foco: PDV + Estoque)
   HYBRID   // (Futuro: Faz os dois)
+}
+
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  CASH
+}
+
+// A Venda em si (Cabeçalho do Recibo)
+model Sale {
+  id             String        @id @default(uuid())
+  code           Int           @default(autoincrement()) // Código numérico para o recibo (Ex: Venda #105)
+  
+  total          Decimal       @db.Decimal(10, 2)
+  discount       Decimal?      @db.Decimal(10, 2) // Valor do desconto aplicado
+  
+  paymentMethod  PaymentMethod @default(CASH)
+  installments   Int           @default(1) // Quantidade de parcelas (ex: 3)
+  
+  // Relacionamentos
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  
+  clientId       String?
+  client         Client?       @relation(fields: [clientId], references: [id])
+
+  items          SaleItem[] // Os produtos dessa venda
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("sales")
+}
+
+// Os Itens da Venda (Linhas do Recibo)
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2) // Preço na hora da venda (se mudar depois, esse não muda)
+  total     Decimal @db.Decimal(10, 2) // quantity * unitPrice
+  
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
 }
