@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Loader2 } from "lucide-react";
-
+import { NotificationBell } from "@/components/notification-bell"
 
 export default function MainLayout({
   children,
@@ -37,6 +37,7 @@ export default function MainLayout({
       <Sidebar />
       <main className="md:pl-72 bg-slate-50 min-h-screen transition-all duration-300">
         <div className="h-full p-4 md:p-8">
+          <NotificationBell />
             {children}
         </div>
       </main>

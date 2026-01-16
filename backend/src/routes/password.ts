@@ -4,10 +4,9 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { hash } from "bcryptjs";
 import { randomUUID } from "crypto";
-import { Resend } from 'resend'; // <--- Importar
-
+import { Resend } from 'resend'; 
 export async function passwordRoutes(app: FastifyInstance) {
-  const resend = new Resend(process.env.RESEND_API_KEY); // <--- Inicializar
+  const resend = new Resend(process.env.RESEND_API_KEY ||'re_key_temporaria_para_dev');
 
   // 1. Solicitar Recuperação
   app.withTypeProvider<ZodTypeProvider>().post('/password/forgot', {

@@ -14,7 +14,8 @@ import {
   Menu,
   Kanban,
   Package,
-  ShoppingCart
+  ShoppingCart,
+  Calendar
 } from "lucide-react"
 import {
   Sheet,
@@ -74,12 +75,21 @@ const routes = [
     color: "text-emerald-500",
     scopes: ['SERVICE', 'RETAIL'] // Todo mundo vê
   },
+
   {
-    label: "Configurações",
-    icon: Settings,
-    href: "/settings",
+    label: "Financeiro",
+    icon: Wallet,
+    href: "/finance",
+    color: "text-emerald-500",
+    scopes: ['SERVICE', 'RETAIL'] // Todo mundo vê
+  },
+
+  {
+    label: "Agenda",
+    icon: Calendar,
+    href: "/agenda",
     color: "text-gray-500", 
-    scopes: ['SERVICE', 'RETAIL']
+    scopes: ['SERVICE']
   },
 ]
 
