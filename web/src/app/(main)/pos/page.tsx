@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { PixPaymentModal } from "@/components/pix-payment-modal"
 
 interface Product {
   id: string
@@ -269,40 +270,59 @@ export default function PosPage() {
             )}
         </CardContent>
         
-       {/* Rodapé do Carrinho */}
-    <div className="p-4 bg-slate-50 border-t space-y-4">
+      {/* Rodapé do Carrinho */}
+        <div className="p-4 bg-slate-50 border-t space-y-4">
 
-        {/* Seletor de Pagamento */}
-        <div className="space-y-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Forma de Pagamento</span>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="bg-white">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="Dinheiro">💵 Dinheiro</SelectItem>
-                    <SelectItem value="Pix">💠 Pix</SelectItem>
-                    <SelectItem value="Crédito">💳 Cartão de Crédito</SelectItem>
-                    <SelectItem value="Débito">💳 Cartão de Débito</SelectItem>
-                </SelectContent>
-            </Select>
+            {/* Seletor de Pagamento */}
+            <div className="space-y-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase">Forma de Pagamento</span>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger className="bg-white">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Dinheiro">💵 Dinheiro</SelectItem>
+                        <SelectItem value="Pix">💠 Pix</SelectItem>
+                        <SelectItem value="Crédito">💳 Cartão de Crédito</SelectItem>
+                        <SelectItem value="Débito">💳 Cartão de Débito</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* --- INTEGRAÇÃO DO PIX AQUI --- */}
+            {/* Só mostra se tiver itens E a forma de pagamento for Pix */}
+            {paymentMethod === 'Pix' && total > 0 && (
+                <div className="pt-2">
+                    <PixPaymentModal 
+                        defaultAmount={total} 
+                        leadName="Venda Balcão"
+                    />
+                    <Button variant="outline" className="w-full gap-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 bg-white border-dashed">
+                        <QrCode className="h-4 w-4" /> 
+                        Gerar QR Code de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                    </Button>
+                    <p className="text-[10px] text-center text-slate-400 mt-1">
+                        Gere o código para o cliente pagar antes de finalizar.
+                    </p>
+                </div>
+            )}
+            {/* ------------------------------- */}
+
+            <div className="flex justify-between items-center pt-2">
+                <span className="text-slate-600">Total</span>
+                <span className="text-2xl font-bold text-slate-900">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
+                </span>
+            </div>
+
+            <Button 
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-lg py-6" 
+                disabled={cart.length === 0 || loading}
+                onClick={handleCheckout}
+            >
+                {loading ? <Loader2 className="animate-spin" /> : "Finalizar Venda"}
+            </Button>
         </div>
-
-        <div className="flex justify-between items-center pt-2">
-            <span className="text-slate-600">Total</span>
-            <span className="text-2xl font-bold text-slate-900">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
-            </span>
-        </div>
-
-        <Button 
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-lg py-6" 
-            disabled={cart.length === 0 || loading}
-            onClick={handleCheckout}
-        >
-            {loading ? <Loader2 className="animate-spin" /> : "Finalizar Venda"}
-        </Button>
-    </div>
       </Card>
            
     </div>

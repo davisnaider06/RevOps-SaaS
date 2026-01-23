@@ -7,6 +7,7 @@ import {z} from 'zod'
 import { notificationsRoutes } from './routes/notifications'
 import { tasksRoutes } from './routes/tasks'
 import fastifyJwt from '@fastify/jwt'
+
 const app = fastify()
 
 app.register(cors, {
@@ -18,6 +19,7 @@ app.register(fastifyJwt, {
   secret: process.env.JWT_SECRET || 'supersecret',
 })
 
+import { profileRoutes } from './routes/profile'
 import { projectsRoutes } from './routes/projects'
 import { financialRoutes } from './routes/financial'
 import { clientsRoutes } from './routes/clients'
@@ -31,6 +33,7 @@ import { productsRoutes } from './routes/products'
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+app.register(profileRoutes)
 app.register(authRoutes)
 app.register(projectsRoutes)
 app.register(financialRoutes)

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
 
+
 // Definição das Rotas com Escopo (Quem pode ver)
 const routes = [
   {
@@ -77,19 +78,25 @@ const routes = [
   },
 
   {
-    label: "Financeiro",
-    icon: Wallet,
-    href: "/finance",
-    color: "text-emerald-500",
-    scopes: ['SERVICE', 'RETAIL'] // Todo mundo vê
-  },
-
-  {
     label: "Agenda",
     icon: Calendar,
     href: "/agenda",
     color: "text-gray-500", 
     scopes: ['SERVICE']
+  },
+
+{
+    label: "Configurações",
+    icon: Settings,
+    href: "/settings",
+    color: "text-gray-500", 
+    scopes: ['SERVICE', 'RETAIL']
+  },
+
+  { 
+    label: 'Config. Pagamentos', 
+    href: '/settings/payments', 
+    icon: Wallet 
   },
 ]
 
@@ -113,7 +120,7 @@ export function Sidebar() {
 
   //Filtra as rotas baseadas no tipo
   const filteredRoutes = routes.filter(route => 
-    userType ? route.scopes.includes(userType) : false
+    userType ? (route.scopes ?? []).includes(userType) : false
   )
 
   return (

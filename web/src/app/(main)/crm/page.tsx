@@ -4,9 +4,11 @@ import { useEffect, useState } from "react"
 import { CreateLeadDialog } from "@/components/create-lead-dialog"
 import { KanbanBoard } from "@/components/crm/kanban/KanbanBoard" // Importe o componente novo
 import { Loader2 } from "lucide-react"
+import { PixPaymentModal } from "@/components/pix-payment-modal"
 
 // Importe o tipo Lead do KanbanCard para garantir consistência
 import { Lead } from "@/components/crm/kanban/KanbanCard"
+import { GeneratePaymentModal } from "@/components/generate-payment-modal"
 
 export default function CrmPage() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -47,9 +49,9 @@ export default function CrmPage() {
       {/* Área do Kanban */}
       <div className="flex-1 overflow-hidden">
         {loading ? (
-            <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-            </div>
+            <><div className="flex h-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+          </div></>
         ) : (
             // AQUI ESTÁ A MUDANÇA PRINCIPAL
             <KanbanBoard initialLeads={leads} />

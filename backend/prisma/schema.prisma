@@ -62,6 +62,12 @@ model User {
   notifications Notification[]
   tasks         Task[]
 
+  pixKey      String?  // A chave pix dele (ex: email@teste.com)
+  pixName     String?  // O nome dele no banco (ex: JOAO SILVA)
+  pixCity     String?
+
+  paymentIntegrations PaymentIntegration[]
+
   @@index([organizationId])
   @@map("users")
 }
@@ -392,3 +398,23 @@ model SaleItem {
 
   @@map("sale_items")
 }
+
+model PaymentIntegration {
+  id        String   @id @default(uuid())
+  provider  String   // Ex: "MERCADO_PAGO", "KIWIFY", "CAKTO", "INTER"
+  name      String   // Nome amigável, ex: "Minha conta MP"
+  
+  // Aqui está o segredo: Guardamos as chaves aqui dentro
+  credentials Json   
+  
+  isActive  Boolean  @default(true)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+

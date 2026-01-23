@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import Link from "next/link"
+import { Wallet, ArrowRight } from "lucide-react"
 import { Loader2, User, Building } from "lucide-react"
 
 export default function SettingsPage() {
@@ -67,7 +69,7 @@ export default function SettingsPage() {
   if (loading) return <div className="p-8 text-slate-500">Carregando configurações...</div>
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <><div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Configurações</h1>
         <p className="text-slate-500">Gerencie seus dados pessoais e da sua empresa.</p>
@@ -82,7 +84,7 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            
+
             {/* Dados Pessoais */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2"><User className="h-4 w-4" /> Seu Nome</Label>
@@ -104,11 +106,10 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Label>CNPJ / Documento (Opcional)</Label>
-              <Input 
-                value={document} 
-                onChange={e => setDocument(e.target.value)} 
-                placeholder="00.000.000/0001-00"
-              />
+              <Input
+                value={document}
+                onChange={e => setDocument(e.target.value)}
+                placeholder="00.000.000/0001-00" />
             </div>
 
           </CardContent>
@@ -120,5 +121,24 @@ export default function SettingsPage() {
         </Card>
       </form>
     </div>
+    <Link href="/settings/pix"> {/* <--- MUDOU DE /payments PARA /pix */}
+          <Card className="hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer group h-full border-l-4 border-l-emerald-500">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-semibold group-hover:text-emerald-600 transition-colors">
+                Meu Pix
+              </CardTitle>
+              <Wallet className="h-5 w-5 text-slate-500 group-hover:text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Configure sua Chave Pix para gerar QR Codes de cobrança instantânea.
+              </CardDescription>
+              <div className="mt-4 flex items-center text-sm text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Configurar agora <ArrowRight className="ml-1 h-4 w-4" />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </>
   )
 }
