@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 
@@ -24,6 +25,12 @@ model Organization {
   fixedExpenses    FixedExpense[]
 
   leads            Lead[]
+
+  products         Product[]
+
+  type          OrgType  @default(SERVICE)
+
+  sales             Sale[]
   
   @@map("organizations")
 }
@@ -53,8 +60,31 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  notifications Notification[]
+  tasks         Task[]
+
+  pixKey      String?  // A chave pix dele (ex: email@teste.com)
+  pixName     String?  // O nome dele no banco (ex: JOAO SILVA)
+  pixCity     String?
+
+  paymentIntegrations PaymentIntegration[]
+
   @@index([organizationId])
   @@map("users")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  
+  @@map("notifications")
 }
 
 enum Role {
@@ -82,6 +112,9 @@ model Client {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  porcentagemDesconto Float @default(0)
+  sales               Sale[]
 
   @@index([organizationId])
   @@map("clients")
@@ -111,9 +144,11 @@ model Deal {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  order Int      @default(0)
 
   @@index([organizationId])
   @@map("deals")
+
 }
 
 enum DealStatus {
@@ -132,6 +167,8 @@ model Project {
   
   startDate   DateTime?
   endDate     DateTime?
+
+  shareToken  String?       @unique
 
   clientId       String
   client         Client @relation(fields: [clientId], references: [id])
@@ -167,10 +204,15 @@ model Task {
   title       String
   description String?
   isCompleted Boolean  @default(false)
+  dueDate     DateTime?
 
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String?   
+  project     Project?  @relation(fields: [projectId], references: [id])
   timeLogs    TimeLog[]
+
+  // Dono da tarefa
+  userId      String?   
+  user        User?     @relation(fields: [userId], references: [id])
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -286,4 +328,112 @@ enum LeadStatus {
   PROPOSAL    // Proposta Enviada
   WON         // Ganho (Vira Cliente)
   LOST        // Perdido
+}
+
+
+enum ProductType {
+  GOOD     // Produto Físico (Shampoo, Camiseta) - Controla Estoque
+  SERVICE  // Serviço (Corte, Consultoria) - Não tem estoque
+}
+
+// CATÁLOGO DE ITENS
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal     @db.Decimal(10, 2) // Preço de Venda
+  costPrice   Decimal?    @db.Decimal(10, 2) // Preço de Custo (Opcional, pra saber margem)
+  
+  type        ProductType @default(GOOD)
+  
+  // Controle de Estoque
+  stockQuantity Int       @default(0) // Quantidade atual
+  minStock      Int?      @default(0) // Estoque mínimo (pra avisar quando tá acabando)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  estoqueMinimo Int @default(5)
+  saleItems     SaleItem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("products")
+}
+
+enum OrgType {
+  SERVICE  // Agências, Consultorias (Foco: Projetos + CRM)
+  RETAIL   // Comércio, Barbearias (Foco: PDV + Estoque)
+  HYBRID   // (Futuro: Faz os dois)
+}
+
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  CASH
+}
+
+// A Venda em si (Cabeçalho do Recibo)
+model Sale {
+  id             String        @id @default(uuid())
+  code           Int           @default(autoincrement()) // Código numérico para o recibo (Ex: Venda #105)
+  
+  total          Decimal       @db.Decimal(10, 2)
+  discount       Decimal?      @db.Decimal(10, 2) // Valor do desconto aplicado
+  
+  paymentMethod  PaymentMethod @default(CASH)
+  installments   Int           @default(1) // Quantidade de parcelas (ex: 3)
+  
+  // Relacionamentos
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  
+  clientId       String?
+  client         Client?       @relation(fields: [clientId], references: [id])
+
+  items          SaleItem[] // Os produtos dessa venda
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("sales")
+}
+
+// Os Itens da Venda (Linhas do Recibo)
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2) // Preço na hora da venda (se mudar depois, esse não muda)
+  total     Decimal @db.Decimal(10, 2) // quantity * unitPrice
+  
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+model PaymentIntegration {
+  id        String   @id @default(uuid())
+  provider  String   // Ex: "MERCADO_PAGO", "KIWIFY", "CAKTO", "INTER"
+  name      String   // Nome amigável, ex: "Minha conta MP"
+  
+  // Aqui está o segredo: Guardamos as chaves aqui dentro
+  credentials Json   
+  
+  isActive  Boolean  @default(true)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

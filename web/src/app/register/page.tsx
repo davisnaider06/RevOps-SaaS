@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Loader2 } from 'lucide-react'
+import { Loader2, Briefcase, ShoppingBag } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  
+  const [orgType, setOrgType] = useState<'SERVICE' | 'RETAIL'>('SERVICE')
+
   // Campos do formulário
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -26,7 +27,6 @@ export default function RegisterPage() {
   async function handleRegister(e: FormEvent) {
     e.preventDefault()
     
-    // --- NOVA VALIDAÇÃO ---
     if (!isValidEmail(email)) {
       setError("Por favor, digite um e-mail válido.")
       return
@@ -35,7 +35,6 @@ export default function RegisterPage() {
       setError("A senha deve ter no mínimo 6 caracteres.")
       return
     }
-    // ---------------------
 
     setLoading(true)
     setError('')
@@ -51,7 +50,8 @@ export default function RegisterPage() {
           name, 
           email, 
           password, 
-          companyName 
+          companyName,
+          orgType
         }),
       })
 
@@ -81,6 +81,25 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div 
+            onClick={() => setOrgType('SERVICE')}
+            className={`cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center gap-2 transition-all ${orgType === 'SERVICE' ? 'border-blue-600 bg-blue-50' : 'border-slate-200 hover:border-slate-300'}`}
+        >
+            <Briefcase className={orgType === 'SERVICE' ? "text-blue-600" : "text-slate-400"} />
+            <span className={`text-sm font-bold ${orgType === 'SERVICE' ? "text-blue-700" : "text-slate-500"}`}>Serviços</span>
+            <span className="text-[10px] text-center text-slate-400 leading-tight">Para agências, consultores e projetos.</span>
+        </div>
+
+        <div 
+            onClick={() => setOrgType('RETAIL')}
+            className={`cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center gap-2 transition-all ${orgType === 'RETAIL' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}
+        >
+            <ShoppingBag className={orgType === 'RETAIL' ? "text-emerald-600" : "text-slate-400"} />
+            <span className={`text-sm font-bold ${orgType === 'RETAIL' ? "text-emerald-700" : "text-slate-500"}`}>Comércio</span>
+            <span className="text-[10px] text-center text-slate-400 leading-tight">Para lojas, barbearias e vendas rápidas.</span>
+        </div>
+    </div>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Seu Nome</Label>

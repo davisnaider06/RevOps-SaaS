@@ -7,7 +7,7 @@ import { verifyJwt } from "../middlewares/verify-jwt";
 export async function crmRoutes(app: FastifyInstance) {
   app.addHook('onRequest', verifyJwt);
 
-  // 1. Listar Leads (Agrupados no Front)
+  // 1. Listar Leads
   app.withTypeProvider<ZodTypeProvider>().get('/leads', async (request, reply) => {
     // @ts-ignore
     const { organizationId } = request.user;
@@ -20,7 +20,7 @@ export async function crmRoutes(app: FastifyInstance) {
     return leads;
   });
 
-  // 2. Criar Lead
+  // 2. Criar Lead + Notificação de Criação
   app.withTypeProvider<ZodTypeProvider>().post('/leads', {
     schema: {
       body: z.object({
@@ -34,20 +34,31 @@ export async function crmRoutes(app: FastifyInstance) {
   }, async (request, reply) => {
     const data = request.body;
     // @ts-ignore
-    const { organizationId } = request.user;
+    // Pegamos o 'sub' (ID do usuário) para vincular a notificação a ele
+    const { organizationId, sub } = request.user; 
 
-    await prisma.lead.create({
+    const lead = await prisma.lead.create({
       data: {
         ...data,
-        status: 'NEW', // Sempre nasce na primeira coluna
+        status: 'NEW', 
         organizationId
       }
     });
 
+    // --- NOVO: Cria a Notificação ---
+    await prisma.notification.create({
+        data: {
+            title: "Novo Lead Cadastrado 🚀",
+            message: `Oportunidade: ${data.title} (${data.contactName})`,
+            userId: sub // Envia para o usuário que criou
+        }
+    })
+    // --------------------------------
+
     return reply.status(201).send();
   });
 
-  // 3. Mover Lead (Atualizar Status)
+  // 3. Mover Lead + Notificação de Venda
   app.withTypeProvider<ZodTypeProvider>().patch('/leads/:id/status', {
     schema: {
       params: z.object({ id: z.string().uuid() }),
@@ -59,12 +70,29 @@ export async function crmRoutes(app: FastifyInstance) {
     const { id } = request.params;
     const { status } = request.body;
     // @ts-ignore
-    const { organizationId } = request.user;
+    const { organizationId, sub } = request.user;
 
+    // Atualiza o status
     await prisma.lead.updateMany({
-      where: { id, organizationId }, // updateMany por segurança (garante orgId)
+      where: { id, organizationId },
       data: { status }
     });
+
+    if (status === 'WON') {
+        // Buscamos o lead para pegar o nome e deixar a mensagem bonita
+        const lead = await prisma.lead.findUnique({ where: { id } })
+        
+        if (lead) {
+            await prisma.notification.create({
+                data: {
+                    title: "Venda Realizada! 💰",
+                    message: `Parabéns! Você fechou o negócio "${lead.title}".`,
+                    userId: sub
+                }
+            })
+        }
+    }
+    // ----------------------------------------------------
 
     return reply.status(204).send();
   });

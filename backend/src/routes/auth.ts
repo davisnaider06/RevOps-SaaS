@@ -16,6 +16,7 @@ export async function authRoutes(app: FastifyInstance) {
         email: z.string().email(),
         password: z.string().min(6),
         companyName: z.string(),
+        orgType: z.enum(['SERVICE', 'RETAIL']).default('SERVICE'),
       })
     }
   }, async (request, reply) => {
@@ -45,6 +46,7 @@ export async function authRoutes(app: FastifyInstance) {
         data: {
           name: companyName,
           slug: slug,
+          type: request.body.orgType as any,
         }
       });
 
@@ -74,7 +76,8 @@ export async function authRoutes(app: FastifyInstance) {
 
     // Buscar usuário pelo email
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
+      include: { organization: true }
     });
 
     if (!user) {
@@ -109,6 +112,7 @@ export async function authRoutes(app: FastifyInstance) {
         name: user.name,
         email: user.email,
         role: user.role,
+        orgType: user.organization.type
       }
     });
   });

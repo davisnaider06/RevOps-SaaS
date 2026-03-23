@@ -49,6 +49,8 @@ export default function LoginPage() {
       }
 
       localStorage.setItem('revops-token', data.token)
+
+      localStorage.setItem('revops-org-type', data.user.orgType)
       
       router.push('/') // Redireciona para a Home
 
