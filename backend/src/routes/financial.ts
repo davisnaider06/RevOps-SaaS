@@ -4,6 +4,15 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { verifyJwt } from "../middlewares/verify-jwt";
 
+const fixedExpenseBodySchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional().nullable(),
+  amount: z.number().positive(),
+  category: z.string().optional().nullable(),
+  dueDay: z.number().int().min(1).max(31),
+  isActive: z.boolean().optional(),
+});
+
 export async function financialRoutes(app: FastifyInstance) {
   app.addHook('onRequest', verifyJwt); //Protege as rotas desse arquivo
 
@@ -252,5 +261,107 @@ export async function financialRoutes(app: FastifyInstance) {
 
     if (formattedData.length === 0) return [];
     return formattedData;
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().post('/fixed-expenses', {
+    schema: {
+      body: fixedExpenseBodySchema,
+    }
+  }, async (request, reply) => {
+    const { name, description, amount, category, dueDay, isActive } = request.body;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const fixedExpense = await prisma.fixedExpense.create({
+      data: {
+        name,
+        description: description || null,
+        amount,
+        category: category || null,
+        dueDay,
+        isActive: isActive ?? true,
+        organizationId,
+      }
+    });
+
+    return reply.status(201).send({ fixedExpenseId: fixedExpense.id, message: 'Fixed expense created!' });
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().get('/fixed-expenses', async (request, reply) => {
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const fixedExpenses = await prisma.fixedExpense.findMany({
+      where: { organizationId },
+      orderBy: [
+        { isActive: 'desc' },
+        { dueDay: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+
+    return fixedExpenses;
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().put('/fixed-expenses/:id', {
+    schema: {
+      params: z.object({
+        id: z.string().uuid(),
+      }),
+      body: fixedExpenseBodySchema,
+    }
+  }, async (request, reply) => {
+    const { id } = request.params;
+    const { name, description, amount, category, dueDay, isActive } = request.body;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const fixedExpense = await prisma.fixedExpense.findFirst({
+      where: { id, organizationId }
+    });
+
+    if (!fixedExpense) {
+      return reply.status(404).send({ message: 'Gasto fixo nao encontrado.' });
+    }
+
+    await prisma.fixedExpense.update({
+      where: { id },
+      data: {
+        name,
+        description: description || null,
+        amount,
+        category: category || null,
+        dueDay,
+        isActive,
+      }
+    });
+
+    return reply.status(204).send();
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().delete('/fixed-expenses/:id', {
+    schema: {
+      params: z.object({
+        id: z.string().uuid(),
+      })
+    }
+  }, async (request, reply) => {
+    const { id } = request.params;
+    // @ts-ignore
+    const { organizationId } = request.user;
+
+    const fixedExpense = await prisma.fixedExpense.findFirst({
+      where: { id, organizationId }
+    });
+
+    if (!fixedExpense) {
+      return reply.status(404).send({ message: 'Gasto fixo nao encontrado.' });
+    }
+
+    await prisma.fixedExpense.delete({
+      where: { id }
+    });
+
+    return reply.status(204).send();
   });
 }

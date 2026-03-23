@@ -139,7 +139,7 @@ export function CreateTransactionDialog() {
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
               >
-                <option value="">Sem projeto (Custo fixo)</option>
+                <option value="">Sem projeto</option>
                 {projects.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
